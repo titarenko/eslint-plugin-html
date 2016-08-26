@@ -3,7 +3,7 @@
 var path = require("path");
 var extract = require("./extract");
 
-var htmlExtensions = [
+var defaultHTMLExtensions = [
   ".erb",
   ".handelbars",
   ".hbs",
@@ -16,7 +16,7 @@ var htmlExtensions = [
   ".vue",
 ];
 
-var xmlExtensions = [
+var defaultXMLExtensions = [
   ".xhtml",
   ".xml",
 ];
@@ -32,60 +32,97 @@ var xmlExtensions = [
 // https://github.com/eslint/eslint/issues/4153
 
 var needle = path.join("lib", "eslint.js");
-var eslint;
+var eslintRoot;
 for (var key in require.cache) {
-  if (key.indexOf(needle, key.length - needle.length) >= 0) {
-    eslint = require(key);
-    if (typeof eslint.verify === "function") {
-      break;
-    }
+  if (key.indexOf(needle, key.length - needle.length) >= 0 &&
+      typeof require.cache[key].exports.verify === "function") {
+    eslintRoot = path.join(key, "..", "..");
+    break;
   }
 }
 
-if (!eslint) {
+if (!eslintRoot) {
   throw new Error("eslint-plugin-html error: It seems that eslint is not loaded. " +
                   "If you think it is a bug, please file a report at " +
                   "https://github.com/BenoitZugmeyer/eslint-plugin-html/issues");
 }
 
-function createProcessor(defaultXMLMode) {
-  var verify = eslint.verify;
+var Config = require(path.join(eslintRoot, "lib", "config"));
+
+var originalGetConfig = Config.prototype.getConfig;
+Config.prototype.getConfig = function (path) {
+  var config = originalGetConfig.call(this, path);
+  var pluginSettings = getPluginSettings(config);
+  var processors = {};
+  pluginSettings.htmlExtensions.forEach(function(ext) {
+    processors[ext] = createProcessor(pluginSettings, false);
+  });
+  pluginSettings.xmlExtensions.forEach(function(ext) {
+    processors[ext] = createProcessor(pluginSettings, true);
+  });
+  exports.processors = processors;
+  return config;
+};
+
+function filterOut(array, excludeArray) {
+  if (!excludeArray) return array;
+  return array.filter(function (item) { return excludeArray.indexOf(item) < 0; });
+}
+
+function getPluginSettings(config) {
+  var settings = config.settings || {};
+
+  var htmlExtensions = settings["html/html-extensions"] ||
+    filterOut(defaultHTMLExtensions, settings["html/xml-extensions"]);
+
+  var xmlExtensions = settings["html/xml-extensions"] ||
+    filterOut(defaultXMLExtensions, settings["html/html-extensions"]);
+
+  var indent = settings["html/indent"];
+
+  var xmlMode = settings["html/xml-mode"];
+
   var reportBadIndent;
+  switch (settings["html/report-bad-indent"]) {
+    case undefined: case false: case 0: case "off": reportBadIndent = 0; break;
+    case true: case 1: case "warn": reportBadIndent = 1; break;
+    case 2: case "error": reportBadIndent = 2; break;
+    default:
+      throw new Error("Invalid value for html/report-bad-indent, " +
+        "expected one of 0, 1, 2, \"off\", \"warn\" or \"error\"");
+  }
+
+  return {
+    htmlExtensions: htmlExtensions,
+    xmlExtensions: xmlExtensions,
+    indent: indent,
+    reportBadIndent: reportBadIndent,
+    xmlMode: xmlMode,
+  };
+}
+
+function createProcessor(settings, defaultXMLMode) {
 
   var currentInfos;
 
-  function patch() {
-    eslint.verify = function (textOrSourceCode, config, filenameOrOptions, saveState) {
-      var indentDescriptor = config.settings && config.settings["html/indent"];
-      var xmlMode = config.settings && config.settings["html/xml-mode"];
-      reportBadIndent = config.settings && config.settings["html/report-bad-indent"];
+  var xmlMode = settings.xmlMode;
 
-      if (typeof xmlMode !== "boolean") {
-        xmlMode = defaultXMLMode;
-      }
-
-      currentInfos = extract(textOrSourceCode, {
-        indent: indentDescriptor,
-        reportBadIndent: Boolean(reportBadIndent),
-        xmlMode: xmlMode,
-      });
-      return verify.call(this, currentInfos.code, config, filenameOrOptions, saveState);
-    };
+  if (typeof xmlMode !== "boolean") {
+    xmlMode = defaultXMLMode;
   }
 
-  function unpatch() {
-    eslint.verify = verify;
-  }
   return {
 
     preprocess: function (content) {
-      patch();
-      return [content];
+      currentInfos = extract(content, {
+        indent: settings.indent,
+        reportBadIndent: settings.reportBadIndent !== 0,
+        xmlMode: xmlMode,
+      });
+      return [currentInfos.code];
     },
 
     postprocess: function (messages) {
-      unpatch();
-
       messages[0].forEach(function (message) {
         message.column += currentInfos.map[message.line] || 0;
       });
@@ -96,7 +133,7 @@ function createProcessor(defaultXMLMode) {
           line: line,
           column: 1,
           ruleId: "(html plugin)",
-          severity: reportBadIndent === true ? 2 : reportBadIndent,
+          severity: settings.reportBadIndent,
         });
       });
 
@@ -110,18 +147,3 @@ function createProcessor(defaultXMLMode) {
   };
 
 }
-
-var htmlProcessor = createProcessor(false);
-var xmlProcessor = createProcessor(true);
-
-var processors = {};
-
-htmlExtensions.forEach(function(ext) {
-  processors[ext] = htmlProcessor;
-});
-
-xmlExtensions.forEach(function(ext) {
-  processors[ext] = xmlProcessor;
-});
-
-exports.processors = processors;

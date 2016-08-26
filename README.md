@@ -5,24 +5,6 @@ eslint-plugin-html
 
 This [`ESLint`](http://eslint.org) plugin extracts and lints scripts from HTML files.
 
-Supported HTML extensions:
-
-* .erb
-* .handelbars
-* .hbs
-* .htm
-* .html
-* .mustache
-* .php
-* .tag
-* .twig
-* .vue
-
-Supported XHTML extensions:
-
-* .xhtml
-* .xml
-
 Only script tags with no type attribute or a type attribute containing a MIME type known to
 represent JavaScript such as `text/javascript` or `application/javascript`, or `text/babel` will be
 linted.
@@ -48,6 +30,37 @@ Example:
 
 Settings
 --------
+
+### `html/html-extensions`
+
+By default, this plugin will only consider files ending with those extensions as HTML: `.erb`,
+`.handelbars`, `.hbs`, `.htm`, `.html`, `.mustache`, `.php`, `.tag`, `.twig`, `.vue`. You can set
+your own list of HTML extensions by using this setting. Example:
+
+```javascript
+{
+    "plugins": [ "html" ],
+    "settings": {
+        "html/html-extensions": [".html", ".we"],  // consider .html and .we files as HTML
+    }
+}
+```
+
+
+### `html/xml-extensions`
+
+By default, this plugin will only consider files ending with those extensions as XML: `.xhtml`,
+`.xml`. You can set your own list of XML extensions by using this setting. Example:
+
+```javascript
+{
+    "plugins": [ "html" ],
+    "settings": {
+        "html/xml-extensions": [".html"],  // consider .html files as XML
+    }
+}
+```
+
 
 ### `html/indent`
 
