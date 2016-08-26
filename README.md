@@ -27,6 +27,16 @@ Example:
 }
 ```
 
+XML support
+-----------
+
+This plugin parses HTML and XML markup slightly differently, mainly when considering `CDATA`
+sections:
+* in XML, any data inside a `CDATA` section will be considered as raw text (not XML) and the `CDATA`
+  delimiter will be droped ;
+* in HTML, there is no such thing for `<script>` tags: the `CDATA` delimiter is considered as normal
+  text and thus, part of the script.
+
 
 Settings
 --------
@@ -92,28 +102,6 @@ conjunction with the `indent` rule. Pass `1` to display warnings, or `2` to disp
     "plugins": [ "html" ],
     "settings": {
         "html/report-bad-indent": 2,
-    }
-}
-```
-
-
-### `html/xml-mode`
-
-By default, files with an extension known to be XML (`.xml`, `.xhtml`) will be considered as XML.
-This slightly changes the markup parsing, mainly when considering `CDATA` sections:
-* in XML, any data inside a `CDATA` section will be considered as raw text (not XML) and the `CDATA`
-  delimiter will be droped ;
-* in HTML, there is no such thing for `<script>` tags: the `CDATA` delimiter is considered as normal
-  text and thus, part of the script.
-
-The setting `html/xml-mode` allows to force all files to be considered as XML (by passing `true`) or
-HTML (by passing `false`). Example:
-
-```javascript
-{
-    "plugins": [ "html" ],
-    "settings": {
-      "html/xml-mode": true,
     }
 }
 ```

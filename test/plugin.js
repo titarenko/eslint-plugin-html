@@ -223,7 +223,7 @@ describe("plugin", function () {
     it("can be forced to consider .html files as XML", () => {
       var messages = execute("cdata.html", {
         settings: {
-          "html/xml-mode": true
+          "html/xml-extensions": [".html"],
         }
       });
 
@@ -247,7 +247,7 @@ describe("plugin", function () {
     it("can be forced to consider .xhtml files as HTML", () => {
       var messages = execute("cdata.xhtml", {
         settings: {
-          "html/xml-mode": false
+          "html/html-extensions": [".xhtml"],
         }
       });
 

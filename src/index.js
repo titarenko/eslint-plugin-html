@@ -80,8 +80,6 @@ function getPluginSettings(config) {
 
   var indent = settings["html/indent"];
 
-  var xmlMode = settings["html/xml-mode"];
-
   var reportBadIndent;
   switch (settings["html/report-bad-indent"]) {
     case undefined: case false: case 0: case "off": reportBadIndent = 0; break;
@@ -97,19 +95,12 @@ function getPluginSettings(config) {
     xmlExtensions: xmlExtensions,
     indent: indent,
     reportBadIndent: reportBadIndent,
-    xmlMode: xmlMode,
   };
 }
 
-function createProcessor(settings, defaultXMLMode) {
+function createProcessor(settings, xmlMode) {
 
   var currentInfos;
-
-  var xmlMode = settings.xmlMode;
-
-  if (typeof xmlMode !== "boolean") {
-    xmlMode = defaultXMLMode;
-  }
 
   return {
 
