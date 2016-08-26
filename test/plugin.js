@@ -62,6 +62,17 @@ describe("plugin", function () {
     assert.equal(messages[0].column, 7);
   });
 
+  it("should work correctly with the 'no-multiple-empty-lines' rule", function () {
+    var messages = execute("simple.html", {
+      rules: {
+        "no-multiple-empty-lines": 2,
+        "no-console": 0,
+      }
+    });
+
+    assert.equal(messages.length, 0);
+  });
+
   describe("html/indent setting", function () {
     it("should automatically compute indent when nothing is specified", function () {
       var messages = execute("indent-setting.html", {
