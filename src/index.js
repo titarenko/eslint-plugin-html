@@ -49,8 +49,10 @@ if (!eslintRoot) {
 
 var Config = require(path.join(eslintRoot, "lib", "config"));
 
-var originalGetConfig = Config.prototype.getConfig;
-Config.prototype.getConfig = function (path) {
+var originalGetConfig = Config.prototype.getConfig.__notPatchedForHTMLPlugin ||
+  Config.prototype.getConfig;
+
+var patchedGetConfig = function (path) {
   var config = originalGetConfig.call(this, path);
   var pluginSettings = getPluginSettings(config);
   var processors = {};
@@ -63,6 +65,8 @@ Config.prototype.getConfig = function (path) {
   exports.processors = processors;
   return config;
 };
+patchedGetConfig.__notPatchedForHTMLPlugin = originalGetConfig;
+Config.prototype.getConfig = patchedGetConfig;
 
 function filterOut(array, excludeArray) {
   if (!excludeArray) return array;
