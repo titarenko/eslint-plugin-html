@@ -69,6 +69,15 @@ function filterOut(array, excludeArray) {
   return array.filter(function (item) { return excludeArray.indexOf(item) < 0; });
 }
 
+function compileRegExp(re) {
+  var tokens = re.split("/");
+  if (tokens.shift()) { // Ignore first token
+    throw new Error("Invalid regexp:" + re);
+  }
+  var flags = tokens.pop();
+  return new RegExp(tokens.join("/"), flags);
+}
+
 function getPluginSettings(config) {
   var settings = config.settings || {};
 
@@ -90,11 +99,27 @@ function getPluginSettings(config) {
         "expected one of 0, 1, 2, \"off\", \"warn\" or \"error\"");
   }
 
+  var javaScriptMIMETypes = settings["html/javascript-mime-types"] ||
+    "/^(application|text)\\/(x-)?(javascript|babel|ecmascript-6)$/i";
+
+  if (!Array.isArray(javaScriptMIMETypes)) javaScriptMIMETypes = [javaScriptMIMETypes];
+
+  javaScriptMIMETypes = javaScriptMIMETypes.map(function (des) {
+    return des[0] === "/" ? compileRegExp(des) : des;
+  });
+
+  function isJavaScriptMIMEType(type) {
+    return javaScriptMIMETypes.some(function (des) {
+      return typeof des === "object" ? des.test(type) : des === type;
+    });
+  }
+
   return {
     htmlExtensions: htmlExtensions,
     xmlExtensions: xmlExtensions,
     indent: indent,
     reportBadIndent: reportBadIndent,
+    isJavaScriptMIMEType: isJavaScriptMIMEType,
   };
 }
 
@@ -109,6 +134,7 @@ function createProcessor(settings, xmlMode) {
         indent: settings.indent,
         reportBadIndent: settings.reportBadIndent !== 0,
         xmlMode: xmlMode,
+        isJavaScriptMIMEType: settings.isJavaScriptMIMEType,
       });
       return [currentInfos.code];
     },

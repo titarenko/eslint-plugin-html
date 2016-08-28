@@ -29,7 +29,7 @@ function iterateScripts(code, options, onScript) {
         return;
       }
 
-      if (attrs.type && !/^(application|text)\/(x-)?(javascript|babel|ecmascript-6)$/i.test(attrs.type)) {
+      if (attrs.type && !options.isJavaScriptMIMEType(attrs.type)) {
         return;
       }
 
@@ -72,6 +72,9 @@ function extract(code, options) {
   var indentDescriptor = parseIndentDescriptor(options && options.indent);
   var reportBadIndentation = options && options.reportBadIndent;
   var xmlMode = options && options.xmlMode;
+  var isJavaScriptMIMEType = options && options.isJavaScriptMIMEType || function (mime) {
+    return /^(application|text)\/(x-)?(javascript|babel|ecmascript-6)$/i.test(mime);
+  };
   var resultCode = "";
   var map = [];
   var lineNumber = 1;
@@ -79,6 +82,7 @@ function extract(code, options) {
 
   iterateScripts(code, {
     xmlMode: xmlMode,
+    isJavaScriptMIMEType: isJavaScriptMIMEType,
   }, function (previousCode, scriptCode) {
 
     // Mark that we're inside a <script> a tag and push all new lines

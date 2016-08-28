@@ -27,6 +27,7 @@ function makeTest(fn, description, params) {
       indent: params.indent,
       reportBadIndent: true,
       xmlMode: params.xmlMode,
+      isJavaScriptMIMEType: params.isJavaScriptMIMEType,
     });
     assert.equal(infos.code, dedent(params.output));
     assert.deepEqual(infos.map, params.map);
@@ -332,5 +333,32 @@ describe("extract", function () {
 
     `,
     map: [ , , 2, 2, 2, 2, 2, 0 ],
+  });
+
+  makeTest(it, "handles the isJavaScriptMIMEType option", {
+    input: `
+    <script>
+      a
+    </script>
+
+    <script type="foo/bar">
+      b
+    </script>
+
+    <script type="foo/baz">
+      c
+    </script>
+    `,
+    isJavaScriptMIMEType(type) { return type === "foo/bar"; },
+    output: `
+
+      a
+      ${htmlLine}
+      ${htmlLine}
+
+      b
+
+    `,
+    map: [ , , 2, 0, , 23, 2, 0 ],
   });
 });

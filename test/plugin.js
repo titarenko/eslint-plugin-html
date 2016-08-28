@@ -219,6 +219,55 @@ describe("plugin", function () {
     });
   });
 
+  describe("html/javascript-mime-types", () => {
+    it("ignores unknown mime types by default", () => {
+      var messages = execute("javascript-mime-types.html");
+
+      assert.equal(messages.length, 2);
+
+      assert.equal(messages[0].ruleId, "no-console");
+      assert.equal(messages[0].line, 8);
+
+      assert.equal(messages[1].ruleId, "no-console");
+      assert.equal(messages[1].line, 12);
+    });
+
+    it("specifies a list of valid mime types", () => {
+      var messages = execute("javascript-mime-types.html", {
+        settings: {
+          "html/javascript-mime-types": ["text/foo"]
+        }
+      });
+
+      assert.equal(messages.length, 2);
+
+      assert.equal(messages[0].ruleId, "no-console");
+      assert.equal(messages[0].line, 8);
+
+      assert.equal(messages[1].ruleId, "no-console");
+      assert.equal(messages[1].line, 16);
+    });
+
+    it("specifies a regexp of valid mime types", () => {
+      var messages = execute("javascript-mime-types.html", {
+        settings: {
+          "html/javascript-mime-types": "/^(application|text)\/foo$/"
+        }
+      });
+
+      assert.equal(messages.length, 3);
+
+      assert.equal(messages[0].ruleId, "no-console");
+      assert.equal(messages[0].line, 8);
+
+      assert.equal(messages[1].ruleId, "no-console");
+      assert.equal(messages[1].line, 16);
+
+      assert.equal(messages[2].ruleId, "no-console");
+      assert.equal(messages[2].line, 20);
+    });
+  });
+
   describe("xml support", () => {
     it("consider .html files as HTML", () => {
       var messages = execute("cdata.html");
