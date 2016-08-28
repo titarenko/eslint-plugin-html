@@ -1,6 +1,7 @@
 UNRELEASED v2.0.0
-* Allow configuring HTML and XML extensions via ESLint config
 * **Drop `html/xml-mode` setting**
+* Allow configuring HTML and XML extensions via ESLint config
+* Allow configuring JS MIME types via ESLint config
 * Simplify `no-multiple-empty-lines` compatibility
 
 2016-08-06 v1.5.2
