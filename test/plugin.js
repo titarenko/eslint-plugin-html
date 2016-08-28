@@ -67,7 +67,7 @@ describe("plugin", function () {
       rules: {
         "no-multiple-empty-lines": 2,
         "no-console": 0,
-      }
+      },
     });
 
     assert.equal(messages.length, 0);
@@ -219,8 +219,8 @@ describe("plugin", function () {
     });
   });
 
-  describe("html/javascript-mime-types", () => {
-    it("ignores unknown mime types by default", () => {
+  describe("html/javascript-mime-types", function () {
+    it("ignores unknown mime types by default", function () {
       var messages = execute("javascript-mime-types.html");
 
       assert.equal(messages.length, 2);
@@ -232,11 +232,11 @@ describe("plugin", function () {
       assert.equal(messages[1].line, 12);
     });
 
-    it("specifies a list of valid mime types", () => {
+    it("specifies a list of valid mime types", function () {
       var messages = execute("javascript-mime-types.html", {
         settings: {
-          "html/javascript-mime-types": ["text/foo"]
-        }
+          "html/javascript-mime-types": ["text/foo"],
+        },
       });
 
       assert.equal(messages.length, 2);
@@ -248,11 +248,11 @@ describe("plugin", function () {
       assert.equal(messages[1].line, 16);
     });
 
-    it("specifies a regexp of valid mime types", () => {
+    it("specifies a regexp of valid mime types", function () {
       var messages = execute("javascript-mime-types.html", {
         settings: {
-          "html/javascript-mime-types": "/^(application|text)\/foo$/"
-        }
+          "html/javascript-mime-types": "/^(application|text)\/foo$/",
+        },
       });
 
       assert.equal(messages.length, 3);
@@ -268,8 +268,8 @@ describe("plugin", function () {
     });
   });
 
-  describe("xml support", () => {
-    it("consider .html files as HTML", () => {
+  describe("xml support", function () {
+    it("consider .html files as HTML", function () {
       var messages = execute("cdata.html");
 
       assert.equal(messages.length, 1);
@@ -280,11 +280,11 @@ describe("plugin", function () {
       assert.equal(messages[0].column, 7);
     });
 
-    it("can be forced to consider .html files as XML", () => {
+    it("can be forced to consider .html files as XML", function () {
       var messages = execute("cdata.html", {
         settings: {
           "html/xml-extensions": [".html"],
-        }
+        },
       });
 
       assert.equal(messages.length, 1);
@@ -294,7 +294,7 @@ describe("plugin", function () {
       assert.equal(messages[0].column, 9);
     });
 
-    it("consider .xhtml files as XML", () => {
+    it("consider .xhtml files as XML", function () {
       var messages = execute("cdata.xhtml");
 
       assert.equal(messages.length, 1);
@@ -304,11 +304,11 @@ describe("plugin", function () {
       assert.equal(messages[0].column, 9);
     });
 
-    it("can be forced to consider .xhtml files as HTML", () => {
+    it("can be forced to consider .xhtml files as HTML", function () {
       var messages = execute("cdata.xhtml", {
         settings: {
           "html/html-extensions": [".xhtml"],
-        }
+        },
       });
 
       assert.equal(messages.length, 1);
